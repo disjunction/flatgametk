@@ -9,10 +9,13 @@ exports.entity.Thing = require('./entity/Thing');
 exports.entity.Movable = require('./entity/Movable');
 exports.entity.Field = require('./entity/Field');
 
-exports.viewport = {};
-exports.viewport.Viewport = require('./viewport/Viewport');
+exports.viewport = {
+	Viewport: require('./viewport/Viewport'),
+	Interactor: require('./viewport/Interactor'),
+	InteractorState: require('./viewport/InteractorState')
+};
 
-// mock package... just to reduce unittest boilerplate
+// mock package... just to reduce unit test boilerplate
 exports.mock = require('./mock/index');
 
 // this is used for including the classes, 

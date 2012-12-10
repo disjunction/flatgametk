@@ -19,7 +19,7 @@ Idealist.inherit(Object, {
 	
 	get keys() {
 		var keys = [];
-		for (var i in this.children) keys.push(i);
+		for (var i in this.items) keys.push(i);
 		return keys;
 	},
 	add: function(item) {

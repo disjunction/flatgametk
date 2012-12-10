@@ -6,7 +6,14 @@ var
     config = smog.app.config,
     ccp    = geo.ccp;
 
-function Thing() {
+/**
+ * @param mixed opts
+ */
+function Thing(opts) {
+	if (typeof opts == 'string') {
+		this.type = opts;
+	}
+	
 	Thing.superclass.constructor.call(this);
 	this._l = ccp(0,0);
 	this._a = 0;

@@ -65,7 +65,7 @@ var Playlist = function(sp){
 	
 	this.playNext = function() {
 		if (this.ids.length > this.pos + 1) {
-			this.pos ++;
+			this.pos++;
 			this.play();
 		}
 	};

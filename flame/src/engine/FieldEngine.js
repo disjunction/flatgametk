@@ -25,7 +25,19 @@ function FieldEngine(field) {
 }
 
 FieldEngine.inherit(Idealist, {
-	
+	// shortcut
+	envision: function(thing) {
+		this.nodeBuilder.envision(thing);
+	},
+	// shortcut
+	embody: function(thing) {
+		this.bodyBuilder.embody(thing);
+	},
+	/**
+	 * it's not to store gravity, use world.GetGravity instead
+	 * @param opts
+	 * @returns {box2d.b2World}
+	 */
 	makeWorld: function(opts) {
 		var gravity = opts && opts['gravity']? opts['gravity'] : new box2d.b2Vec2(0, 0);
 		return this.world = new box2d.b2World(gravity, true);
@@ -43,12 +55,36 @@ FieldEngine.inherit(Idealist, {
 		if (!thing.ii || !this.field.get(thing.ii)) {
 			this.field.add(thing);
 		}
-		var body = this.bodyBuilder.embody(thing);
-		body.thing = thing;
-		this.add(body);
 		
-		// backlink through id to avoid recursive references
-		thing.bodyId = body.ii;
+		if (!thing.nobody) {
+			var body = this.bodyBuilder.embody(thing);
+			body.thing = thing;
+			this.add(body);
+			
+			// backlink through id to avoid recursive references
+			thing.bodyId = body.ii;
+		}
+	},
+	
+	removeThing: function(thing, leaveNodes) {
+		if (typeof thing == 'string') {
+			thing = this.field.get(thing);
+		}
+		
+		// remove from field
+		if (thing.ii) {
+			this.field.remove(thing.ii);
+		}
+		
+		// remove from world
+		if (thing.bodyId) {
+			var body = this.get(thing.bodyId);
+			if (body) this.world.DestroyBody(body);
+		}
+		
+		if (!leaveNodes && this.nodeBuilder) {
+			this.nodeBuilder.destroyNodes(thing);
+		}
 	},
 	
 	step: function() {

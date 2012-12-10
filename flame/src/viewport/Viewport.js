@@ -12,6 +12,9 @@ var
  */
 function Viewport(nodeFactory, director) {
 	Viewport.superclass.constructor.call(this);
+	
+	this.scale = 1;
+	
 	this.director = director;
 	this.nf = nodeFactory;
 
@@ -30,13 +33,24 @@ function Viewport(nodeFactory, director) {
 }
 
 Viewport.inherit(Object, {
+	makeAnimator: function(layer) {
+		var Animator = require('./Animator');
+		this.animator = new Animator(this.nodeFactory, config);
+	},
 	addLayersTo: function(layer) {
 		layer.addChild(this.far);
 		layer.addChild(this.scrolled);
 		layer.addChild(this.hud);
 	},
 	moveCameraTo: function(point) {
-		this.scrolled.position = geo.ccpAdd(ccp(-point.x,-point.y), this.cameraAnchor);
+		this.scrolled.position = geo.ccpAdd(geo.ccpMult(ccp(-point.x,-point.y), this.scale), this.cameraAnchor);
+	},
+	scaleCameraTo: function(scale, dur) {
+		this.scale = scale;
+		if (!dur) dur = 0;
+		if (this.animator) {
+			this.animator.scaleTo(this.scrolled, scale, dur);
+		}
 	}
 });
 

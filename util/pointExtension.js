@@ -67,4 +67,25 @@ geo.floorAngle = function(a) {
 	return a;
 };
 
+/**
+ * 
+ * @param Float a1
+ * @param Float a2
+ * @returns
+ */
+geo.closestRotation = function(a1, a2) {
+	a1 = geo.floorAngle(a1);
+	a2 = geo.floorAngle(a2);
+	if ( a1 < -Math.PI / 2 && a2 > Math.PI / 2 ) a1 += Math.PI * 2;
+	if ( a1 > Math.PI / 2 && a2 < -Math.PI / 2 ) a1 -= Math.PI * 2;
+
+	return a2 - a1;	
+};
+
+geo.sign = function(v) {
+	if (v == 0) return 0;
+	return v > 0? 1 : -1;
+};
+
+
 module.exports = geo;

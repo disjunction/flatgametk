@@ -31,6 +31,10 @@ ThingBodyBuilder.prototype.getMaterials = function() {
 		gum: {
 			friction: 0.95,
 			restitution: 0.9
+		},
+		pitch: {
+			friction: 100,
+			restitution: 0
 		}
 	};
 };
@@ -54,9 +58,14 @@ ThingBodyBuilder.prototype.makeFixtureDef = function(opts) {
     fixDef.restitution = material.restitution;
     fixDef.density = opts.density? opts.density : this.defaults.density;;
     
+    fixDef.shape = new box2d.b2PolygonShape;
     if (opts.box) {
-	    fixDef.shape = new box2d.b2PolygonShape;
 	    fixDef.shape.SetAsBox(opts.box.width / 2, opts.box.height / 2);
+    } else if (opts.polygon) {
+    	var verts = opts.polygon.vertices;
+    	fixDef.shape.SetAsArray(verts, verts.length);
+    } else {
+    	throw new Error('unknown fixture type');
     }
     
     return fixDef;
@@ -74,11 +83,17 @@ ThingBodyBuilder.prototype.makeBodyByDef = function(def) {
 	}
     
 	bodyDef.linearDamping = def.linearDamping? def.linearDamping : this.defaults.linearDamping;
-	bodyDef.angularDamping = def.angularDamping? def.linearDamping : this.defaults.angularDamping;
+    bodyDef.angularDamping = def.angularDamping? def.angularDamping : this.defaults.angularDamping;
+    if (def.bullet) bodyDef.bullet = true;
     
     var body = this.world.CreateBody(bodyDef);
     for (var k in def.fixtures)
     	body.CreateFixture(this.makeFixtureDef(def.fixtures[k]));
+    
+    if (def.linearVelocity) {
+    	body.SetLinearVelocity(def.linearVelocity);
+    }
+    
     return body;
 };
 

@@ -60,6 +60,9 @@ NodeFactory.inherit(Object, {
 			case 'scale':
 				node.scale = opts[i];
 				break;
+			case 'anchorPoint':
+				node.anchorPoint = opts[i];
+				break;
 			}
 		}
 		return node;

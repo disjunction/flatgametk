@@ -8,8 +8,8 @@ var
 /**
  * helper class - encapsulates generic functionality for moving physical body wrappers
  */
-function Movable() {
-	Movable.superclass.constructor.call(this);
+function Movable(opts) {
+	Movable.superclass.constructor.call(this, opts);
 }
 
 Movable.inherit(Thing, {

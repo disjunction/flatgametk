@@ -38,17 +38,36 @@ ThingNodeBuilder.prototype.envision = function(thing) {
 		node.position = geo.ccpMult(thing.location, config.ppm);
 		thing.nodes[k] = node;
 		
+		// layer name in viewport array, needed for future removal, see sestroyNodes()
 		var viewportLayer;
+		
 		if (nodeDef.layer) {
 			viewportLayer = nodeDef.layer;
 		} else if (this.viewport[k]) {
 			viewportLayer = k;
 		} else {
-			throw new Error('cannot find appropriate viewport layer for node ' + k + ' in thing ' + thing.type);
+			throw new Error('cannot find appropriate viewport layer creating node ' + k + ' in thing ' + thing.type);
 		}
 		
+		node.layer = viewportLayer;
 		this.viewport[viewportLayer].addChild(node);
 	}
+};
+
+ThingNodeBuilder.prototype.destroyNodes = function(thing) {
+	for (var k in thing.nodes) {	
+		var viewportLayer;
+		if (thing.nodes[k].layer) {
+			viewportLayer = thing.nodes[k].layer;
+		} else if (this.viewport[k]) {
+			viewportLayer = k;
+		} else {
+			throw new Error('cannot find appropriate viewport layer removing node ' + k + ' in thing ' + thing.type);
+		}
+		
+		this.viewport[viewportLayer].removeChild(thing.nodes[k]);
+	}
+	thing.nodes = {};
 };
 
 module.exports = ThingNodeBuilder;

@@ -55,6 +55,20 @@ Interactor.inherit(Object, {
 			layer.mouseUp = this.mouseUp.bind(this);
 		}
 	},
+	processKey: function(evt, type, on, key) {
+		switch (key.type) {
+		case 'state':
+			var stateCode = key.state;
+			on? this.state.on(stateCode) : this.state.off(stateCode);
+			break;
+		case 'event':
+			if (key.on == type)
+				if (this.applier) this.applier.applyEvent(evt, key.event);
+			break;
+		default:
+			throw new Error('unknown layout entry type for key ' + evt.keyCode);
+		}
+	},
 	processEvent: function(evt, type, on) {		
 		var code = evt.keyCode;
 		
@@ -65,17 +79,15 @@ Interactor.inherit(Object, {
 		
 		for (var keyCode in this.layout.keys) {
 			if (code == keyCode) {
-				switch (this.layout.keys[code].type) {
-				case 'state':
-					var stateCode = this.layout.keys[code].state;
-					on? this.state.on(stateCode) : this.state.off(stateCode);
-					break;
-				case 'event':
-					if (this.layout.keys[code].on == type)
-						if (this.applier) this.applier.applyEvent(evt, this.layout.keys[code].event);
-					break;
-				default:
-					throw new Error('unknown layout entry type for key ' + code);
+				
+				// if key contains an array, then try to execute all of them
+				if (Array.isArray(this.layout.keys[code])) {
+					for (var i in this.layout.keys[code]) {
+						this.processKey(evt, type, on, this.layout.keys[code][i]);
+					}
+				// else there is only single operation 
+				} else {
+					this.processKey(evt, type, on, this.layout.keys[code]);
 				}
 			}
 		}

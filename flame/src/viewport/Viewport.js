@@ -33,9 +33,9 @@ function Viewport(nodeFactory, director) {
 }
 
 Viewport.inherit(Object, {
-	makeAnimator: function(layer) {
+	makeAnimator: function() {
 		var Animator = require('./Animator');
-		this.animator = new Animator(this.nodeFactory, config);
+		this.animator = new Animator(this.nf, config);
 	},
 	addLayersTo: function(layer) {
 		layer.addChild(this.far);

@@ -22,6 +22,29 @@ NodeFactory.inherit(Object, {
 	makeSprite: function(opts) {
 		return this.applyOpts(new nodes.Sprite(opts), opts);
 	},
+	makeAnimatedSprite: function(opts) {
+		if (!opts.file || !opts.frames || !opts.delay) {
+			throw new Error('animatedFrame requires file, frames and delay options');
+		}
+		//console.log(opts.file );
+		var texture = new cocos2d.Texture2D({ file: opts.file });
+		//return this.makeSprite(opts);
+		var frames = [];
+		for (var i in opts.frames) {
+			var rect = opts.frames[i];
+			if (!rect.size) rect.size = opts.size;
+			var frame = new cocos2d.SpriteFrame({texture: texture, rect: rect});
+			frames.push(frame);
+		}
+		var node = new nodes.Sprite({frame: frames[0]}),
+			animation = new cocos2d.Animation({frames: frames, delay: opts.delay}),
+			animate = new cocos2d.actions.Animate({animation: animation, restoreOriginalFrame: false});
+			wrapper = opts.endless? new cocos2d.actions.RepeatForever(animate) : animate;
+		
+		node.autoaction = wrapper;
+		
+		return this.applyOpts(node, opts);
+	},
 	makeMap: function(opts) {
 		return new nodes.TMXTiledMap(opts);
 	},

@@ -82,18 +82,19 @@ jsein.cloneWithTypes = function(obj, predefinedType) {
 };
 
 
-jsein.create = function(className) {
+jsein.create = function(className, opts) {
+	var ctor;
 	try {
-		var ctor = eval(className);
-		if (typeof ctor == 'function') return new ctor();
+		ctor = eval(className);
+		if (typeof ctor == 'function') return new ctor(opts);
 	} catch (e) {
 		if (!e instanceof ReferenceError) {
 			throw e;
-		} 
+		}
 	};
 	for (var i in jsein.ctorLocators) {
 		ctor = jsein.ctorLocators[i](className);
-		if (typeof ctor == 'function') return new ctor();
+		if (typeof ctor == 'function') return new ctor(opts);
 	}
 	throw new Error('cannot find ctor for ' + className);
 };
@@ -181,6 +182,26 @@ jsein.parseFloat = function (o, defaultValue) {
 	if (o instanceof Object) {
 		return o.min + Math.random() * (o.max - o.min);
 	}
+	return o;
+};
+
+jsein.resolve = function(o) {
+	for (var k in o) {
+		var val = o[k];
+		if (val._t == 'random') {
+			o[k] = jsein.parseFloat(val);
+		}
+		
+		if (typeof o[k] == 'object') {
+			jsein.resolve(o[k]);
+		}
+	}
+	return o;
+};
+
+jsein.cloneResolved = function (source) {
+	var o = jsein.clone(source);
+	jsein.resolve(o);
 	return o;
 };
 

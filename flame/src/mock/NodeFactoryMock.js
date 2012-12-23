@@ -12,6 +12,9 @@ NodeFactoryMock.inherit(Object, {
 		newOpts.nodeType = 'node';
 		return new NodeMock(newOpts);
 	},
+    makeAnimatedSprite: function(opts) {
+		return this.makeSprite(opts);
+	},
 	makeSprite: function(opts) {
 		if (!opts) opts = {};
 		var newOpts = jsein.clone(opts);

@@ -14,13 +14,80 @@ function ThingNodeBuilder(viewport, defRepo) {
 	this.defRepo = defRepo;
 }
 
+/**
+ * wrapper for atomicAnimateNode with animator verification and multiple action support
+ * @param node
+ * @param animateDef
+ */
+ThingNodeBuilder.prototype.animateNode = function(node, animateDef, layer) {
+	if (!this.viewport.animator) return;
+	
+	if (Array.isArray(animateDef)) {
+		for (var i in animateDef) {
+			this.animateNodeAttomic(node, animateDef[i], layer);
+		}
+	} else {
+		this.animateNodeAttomic(node, animateDef, layer);
+	}
+};
+
+ThingNodeBuilder.prototype.animateNodeAttomic = function(node, animateDef, layer) {
+	if (animateDef.action == 'Remove') {
+		if (!animateDef.delay) {
+			throw new Error('Remove action requires param "delay"');
+		}
+		
+		this.viewport.animator.remove(node, animateDef.delay, layer);
+		if (animateDef.removeThing) {
+			// just to guarantee it happens after node removal +1
+			node.removeThing = {delay: animateDef.delay + 1};
+		}
+		return;
+	}
+	this.viewport.animator.animateNode(node, animateDef);
+};
+
 ThingNodeBuilder.prototype.makeNodeByDef = function(nodeDef) {
-	if (nodeDef.type == 'sprite') {
-		var node = this.viewport.nf.makeSprite(nodeDef.opts);
-		return node;
+	var node = false;
+	if (!nodeDef.type  || nodeDef.type == 'sprite') {
+		node = this.viewport.nf.makeSprite(nodeDef.opts);
+	}
+
+	if (nodeDef.type == 'animatedSprite') {
+		node = this.viewport.nf.makeAnimatedSprite(nodeDef.opts);
 	}
 	
-	throw new Error('unknown node type ' + nodeDef.type);
+	if (!node) throw new Error('unknown node type ' + nodeDef.type);
+	return node;
+};
+
+ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing) {
+	var node = this.makeNodeByDef(nodeDef);
+
+	node.position = geo.ccpMult(thing.location, config.ppm);
+	thing.nodes[nodeName] = node;
+	
+	// layer name in viewport array, needed for future removal, see sestroyNodes()
+	var viewportLayer;
+	
+	if (nodeDef.layer) {
+		viewportLayer = nodeDef.layer;
+	} else if (this.viewport[nodeName]) {
+		viewportLayer = nodeName;
+	} else {
+		throw new Error('cannot find appropriate viewport layer creating node ' + nodeName + ' in thing ' + thing.type);
+	}
+	
+	node.layer = viewportLayer;
+	this.viewport[viewportLayer].addChild(node);
+	
+	if (node.autoaction) {
+		node.runAction(node.autoaction);
+	}
+	if (nodeDef.animate) {
+		this.animateNode(node, nodeDef.animate, this.viewport[viewportLayer]);
+	}
+	return node;
 };
 
 ThingNodeBuilder.prototype.envision = function(thing) {
@@ -32,25 +99,10 @@ ThingNodeBuilder.prototype.envision = function(thing) {
 		throw new Error('no def.nodes for thing ' + thing.type);
 	}
 	for (var k in def.nodes) {
-		var nodeDef = def.nodes[k],
-		    node = this.makeNodeByDef(nodeDef);
-		
-		node.position = geo.ccpMult(thing.location, config.ppm);
-		thing.nodes[k] = node;
-		
-		// layer name in viewport array, needed for future removal, see sestroyNodes()
-		var viewportLayer;
-		
-		if (nodeDef.layer) {
-			viewportLayer = nodeDef.layer;
-		} else if (this.viewport[k]) {
-			viewportLayer = k;
-		} else {
-			throw new Error('cannot find appropriate viewport layer creating node ' + k + ' in thing ' + thing.type);
+		var node = this.envisionNodeByDef(def.nodes[k], k, thing);
+		if (node.removeThing) {
+			thing.removeThing = node.removeThing;
 		}
-		
-		node.layer = viewportLayer;
-		this.viewport[viewportLayer].addChild(node);
 	}
 };
 

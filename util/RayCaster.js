@@ -15,9 +15,11 @@ var RayCaster = function(world){
 /**
  * @param b2Vec2 p1
  * @param b2Vec2 p2
+ * @param Array excludes
+ * @param Function excludeFunction(body)
  * @return {body: ..., fraction: 0.zzz, normal: {x,y}}
  */
-RayCaster.prototype.RayCastOne = function(p1, p2, excludes) {
+RayCaster.prototype.RayCastOne = function(p1, p2, excludes, excludeFunction) {
 	
 	var hitBodies = [];
 	
@@ -39,6 +41,11 @@ RayCaster.prototype.RayCastOne = function(p1, p2, excludes) {
     			}
     		}
     	}
+    	
+    	if (excludeFunction) {
+    		if (excludeFunction(fixture.GetBody())) return true;
+    	}
+    	
     	var output = new box2d.b2RayCastOutput,
     		hit = fixture.RayCast(output, input);
     	if (hit) {
@@ -69,17 +76,18 @@ RayCaster.prototype.RayCastOne = function(p1, p2, excludes) {
 };
 
 /**
- * A helper wraper, since normally we know the tower, angle and the distance
+ * A helper wraper, since normally we know the shooter, angle and the distance
  * @param p1
  * @param distance
  * @param angle
  * @param excludes
+ * @param excludeFunction
  * @returns see RayCastOne
  */
-RayCaster.prototype.RayCastOneAngular = function(p1, distance, angle, excludes) {
+RayCaster.prototype.RayCastOneAngular = function(p1, distance, angle, excludes, excludeFunction) {
 	var p2 = geo.ccp(p1.x + distance * Math.cos(angle),
 			 p1.y + distance * Math.sin(angle));
-	return this.RayCastOne(p1, p2, excludes);
+	return this.RayCastOne(p1, p2, excludes, excludeFunction);
 };
 
 module.exports = RayCaster;

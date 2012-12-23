@@ -1,5 +1,8 @@
 var
+	smog     = require('smog'),
+	config   = smog.app.config,
 	cocos2d = require('cocos2d'),
+	jsein = require('jsein'),
 	nodes = cocos2d.nodes,
 	actions = cocos2d.actions,
     geo    = require('pointExtension'),
@@ -18,11 +21,51 @@ function Animator(nodeFactory, config) {
 	this.nodeFactory = nodeFactory;
 }
 
+Animator.prototype.makeAction = function(animateDef) {
+	if (animateDef.action == 'Sequence') {
+		if (!animateDef.actions || !animateDef.actions) {
+			throw new Error('Sequence action def requires array param "actions"');
+		}
+		
+		var subactions = [];
+		for (var i in animateDef.actions) {
+			subactions.push(this.makeAction(animateDef.actions[i]));
+		}
+
+		return  new actions.Sequence({actions: subactions});
+	}
+	
+	var resolved = jsein.cloneResolved(animateDef);
+	
+	if (actions[resolved.action]) {
+		if (resolved.angleDeg) {
+			resolved.angle = resolved.angleDeg / 180 * Math.PI;
+		}
+		if (resolved.angle && Math.abs(resolved.angle) < Math.PI * 2) {
+			resolved.angle = -resolved.angle * 180 / Math.PI;
+		}
+		if (resolved.location) {
+			resolved.position = geo.ccpMult(resolved.location, config.ppm);
+		}
+		return new (actions[resolved.action])(resolved);
+	}
+	
+	throw new Error('unknown action in Animator.makeAction: ' + resolved.action);
+};
+
+Animator.prototype.animateNode = function(node, animateDef) {
+	if (!animateDef.action) throw new Error('undefined action in animationDef');
+		
+	var action = this.makeAction(animateDef);
+	node.runAction(action);	
+};
+
+
 Animator.prototype.showSpriteAndFadeOutRemove = function(spriteOpts, dur1, dur2, layer) {
 	var sprite = this.nodeFactory.makeSprite(spriteOpts);
 	
 	layer.addChild(sprite);
-	this.fadeOutRemove(sprite, dur1, dur2);
+	this.fadeOutRemove(sprite, dur1, dur2, layer);
 	if (spriteOpts.rotateBy) {
 		this.rotateBy(sprite, spriteOpts.rotateBy, dur1 + dur2);
 	}
@@ -42,6 +85,12 @@ Animator.prototype.scaleTo = function(node, scale, dur) {
 	node.runAction(new actions.ScaleTo({duration: dur, scale: scale}));
 };
 
+Animator.prototype.remove = function(node, delay, layer) {
+	setTimeout(function() {
+		layer.removeChild(node);
+	}.bind(this), delay * 1000);
+};
+
 Animator.prototype.fadeOutRemove = function(node, dur1, dur2, layer) {
 	var sequence = new actions.Sequence({actions: [
 	    new actions.DelayTime({duration: dur1}),
@@ -49,9 +98,7 @@ Animator.prototype.fadeOutRemove = function(node, dur1, dur2, layer) {
 	]});
 	
 	node.runAction(sequence);
-	setTimeout(function remove() {
-		layer.removeChild(node);
-	}.bind(this), (dur1+dur2) * 1000);
+	this.remove(node, dur1 + dur2, layer);
 };
 
 Animator.prototype.backAndForth = function(node, distance, backDur, forthDur) {

@@ -100,9 +100,10 @@ ThingBodyBuilder.prototype.makeBodyByDef = function(def) {
 ThingBodyBuilder.prototype.embody = function(thing) {
 	var def = this.defRepo.get(thing.type);
 	if (!def) {
-		throw new Error('no def for thing ' + thing.type);
+	    throw new Error('no def for thing ' + thing.type);    
 	}
 	if (!def.body) {
+		asdfkaskjdfhkahsd();
 		throw new Error('no def.body for thing ' + thing.type);
 	}
 

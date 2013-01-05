@@ -7,7 +7,8 @@ var
     config   = smog.app.config,
     flame    = require('flame'),
     Idealist = smog.util.Idealist,
-    box2d     = require('box2d');
+    box2d    = require('box2d'),
+	jsein    = require('jsein');
 
 function ThingNodeBuilder(viewport, defRepo) {
 	this.viewport = viewport;
@@ -18,6 +19,7 @@ function ThingNodeBuilder(viewport, defRepo) {
  * wrapper for atomicAnimateNode with animator verification and multiple action support
  * @param node
  * @param animateDef
+ * @param Node|Layer layer - optional, needed only if node.layer is empty
  */
 ThingNodeBuilder.prototype.animateNode = function(node, animateDef, layer) {
 	if (!this.viewport.animator) return;
@@ -32,6 +34,10 @@ ThingNodeBuilder.prototype.animateNode = function(node, animateDef, layer) {
 };
 
 ThingNodeBuilder.prototype.animateNodeAttomic = function(node, animateDef, layer) {
+	if (!layer && node.layer) {
+		layer = this.viewport[node.layer];
+	}
+	
 	if (animateDef.action == 'Remove') {
 		if (!animateDef.delay) {
 			throw new Error('Remove action requires param "delay"');
@@ -39,8 +45,8 @@ ThingNodeBuilder.prototype.animateNodeAttomic = function(node, animateDef, layer
 		
 		this.viewport.animator.remove(node, animateDef.delay, layer);
 		if (animateDef.removeThing) {
-			// just to guarantee it happens after node removal +1
-			node.removeThing = {delay: animateDef.delay + 1};
+			// just to guarantee it happens after node removal + 0.1
+			node.removeThing = {delay: animateDef.delay + 0.1};
 		}
 		return;
 	}
@@ -62,6 +68,10 @@ ThingNodeBuilder.prototype.makeNodeByDef = function(nodeDef) {
 };
 
 ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing) {
+	if (thing.scale) {
+		nodeDef = jsein.clone(nodeDef);
+		nodeDef.opts.scale = thing.scale;
+	}
 	var node = this.makeNodeByDef(nodeDef);
 
 	node.position = geo.ccpMult(thing.location, config.ppm);

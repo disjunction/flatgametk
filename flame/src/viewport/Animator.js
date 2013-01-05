@@ -57,6 +57,7 @@ Animator.prototype.animateNode = function(node, animateDef) {
 	if (!animateDef.action) throw new Error('undefined action in animationDef');
 		
 	var action = this.makeAction(animateDef);
+	//console.log(action);
 	node.runAction(action);	
 };
 

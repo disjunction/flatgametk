@@ -20,6 +20,10 @@ Protagonist.prototype.location2position = function(location) {
 	return geo.ccpMult(location, config.ppm);
 };
 
+Protagonist.prototype.setFieldEngine = function(fe) {
+	this.fe = fe;
+};
+
 Protagonist.prototype.syncCamera = function() {
 	var body = this.fe.get(this.ego.bodyId);
 	if (body) {

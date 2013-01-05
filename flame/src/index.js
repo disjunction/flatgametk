@@ -12,7 +12,9 @@ exports.entity.Field = require('./entity/Field');
 exports.viewport = {
 	Viewport: require('./viewport/Viewport'),
 	Interactor: require('./viewport/Interactor'),
-	InteractorState: require('./viewport/InteractorState')
+	InteractorState: require('./viewport/InteractorState'),
+	SoundPlayer: require('./viewport/SoundPlayer')
+	// Animator is excluded from autoload, because it contains dependencies on cocos2d
 };
 
 // mock package... just to reduce unit test boilerplate

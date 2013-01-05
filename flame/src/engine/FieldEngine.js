@@ -25,9 +25,21 @@ function FieldEngine(field) {
     
     this.preStepPlugins = [];
     this.postStepPlugins = [];
+    
+    // special thing groups, allowing to do shorter loops for individual things
+    // unlike items, groups contain things instead of bodies, i.e. nobody things can be found here
+    // structure: {'groupName': {'thing.ii1': {Thing1}, 'thing.ii2': {Thing2} ... }, ...}
+    this.groups = {};
 }
 
 FieldEngine.inherit(Idealist, {
+	addThingToGroup: function(thing, group) {
+		if (!this.groups[group]) {
+			this.groups[group] = {};
+		}
+		this.groups[group][thing.ii] = thing;
+	},
+	
 	// adds support of thing auto-removal
 	envision: function(thing) {
 		this.nodeBuilder.envision(thing);
@@ -58,6 +70,26 @@ FieldEngine.inherit(Idealist, {
 			node.position = geo.ccpMult(thing.location, ccp(config.ppm, config.ppm));
 		    node.rotation = geo.radiansToDegrees(-thing.angle);
 		}
+	},
+	
+	findBodiesInArea: function(p1, p2, excludes) {
+		var bodies = [],
+			aabb = new box2d.b2AABB();
+		function gatherBodies(fixture) {
+			var body = fixture.GetBody();
+			// if body has multiple fixtures, then skip
+			for (var k in bodies) if (bodies[k].ii == body.ii) return true;
+			for (var k in excludes) {
+				if (typeof excludes[k] == 'object' && excludes[k].ii == body.ii) return true;
+				if (excludes[k] == body.ii) return true;
+			}
+			bodies.push(body);
+			return true;
+		};
+	    aabb.lowerBound = p1;
+	    aabb.upperBound = p2;
+	    this.world.QueryAABB(gatherBodies, aabb);
+	    return bodies;
 	},
 	
 	applyModifiers: function(thing, modifiers) {
@@ -114,6 +146,10 @@ FieldEngine.inherit(Idealist, {
 			// backlink through id to avoid recursive references
 			thing.bodyId = body.ii;
 		}
+		
+		if (thing.group) {
+			this.addThingToGroup(thing, thing.group);
+		}
 	},
 	
 	removeThing: function(thing, leaveNodes) {
@@ -130,6 +166,11 @@ FieldEngine.inherit(Idealist, {
 		if (thing.bodyId) {
 			var body = this.get(thing.bodyId);
 			if (body) this.world.DestroyBody(body);
+			this.remove(thing.bodyId);
+		}
+		
+		if (thing.group) {
+			delete this.groups[thing.group][thing.ii];
 		}
 		
 		if (!leaveNodes && this.nodeBuilder) {
@@ -139,30 +180,33 @@ FieldEngine.inherit(Idealist, {
 	
 	step: function() {
 		if (!this.oldTime) this.oldTime = (new Date()).getTime();
-		var newTime = (new Date()).getTime();
 		
-		this.preStep();
+		var newTime = (new Date()).getTime(),
+			delta = (newTime - this.oldTime)/1000;
 		
-		this.world.Step((newTime - this.oldTime)/1000, 10, 10);
+		this.preStep(delta);
+		
+		
+		this.world.Step(delta, 10, 10);
 		this.world.ClearForces();
 		
-		this.postStep();
+		this.postStep(delta);
 		
 		this.oldTime = newTime;
 	},
 	
-	runPreStepPlugins: function() {
+	runPreStepPlugins: function(delta) {
 		for (var i in this.preStepPlugins) {
-			this.preStepPlugins[i].call();
+			this.preStepPlugins[i].call(this, delta);
 		}
 	},
 	
-	preStep: function() {
-		this.runPreStepPlugins();
+	preStep: function(delta) {
+		this.runPreStepPlugins(delta);
 	},
 	
-	postStep: function() {
-		this.runPostStepPlugins();
+	postStep: function(delta) {
+		this.runPostStepPlugins(delta);
 		for (var key in this.items) {
 			var thing = this.items[key].thing;
 			thing.location = this.items[key].GetPosition();
@@ -170,9 +214,9 @@ FieldEngine.inherit(Idealist, {
 		}
 	},
 	
-	runPostStepPlugins: function() {
+	runPostStepPlugins: function(delta) {
 		for (var i in this.postStepPlugins) {
-			this.postStepPlugins[i].call();
+			this.postStepPlugins[i].call(this, delta);
 		}
 	},
 
@@ -289,7 +333,7 @@ FieldEngine.make = function(opts) {
     	var nodeBuilderClass = opts['NodeBuilderClass']? opts['NodeBuilderClass'] : require('./ThingNodeBuilder');
     	fe.nodeBuilder = new nodeBuilderClass(p.viewport, defRepo);
     	
-    	p.fe = fe;
+    	p.setFieldEngine(fe);
     	if (p.ego) this.ego = p.ego;
     } else {
     	this.config = opts['config']? opts['config'] : smog.app.config;

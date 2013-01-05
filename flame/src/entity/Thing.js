@@ -12,6 +12,8 @@ var
 function Thing(opts) {
 	if (typeof opts == 'string') {
 		this.type = opts;
+	} else if (typeof opts == 'object' && opts.type) {
+		this.type = opts.type;
 	}
 	
 	Thing.superclass.constructor.call(this);

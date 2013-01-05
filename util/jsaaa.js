@@ -24,12 +24,20 @@ var SoundPlayer = function(af){
 };
 
 SoundPlayer.prototype.createSound = function(opts) {
+	if (typeof opts == 'string') opts = {url: opts};
 	if (!opts.url) throw new Error('jsaaa.createSound requires url option');
 	if (!opts.id) opts.id = opts.url;
+	this.registry[opts.id] = this.makeSound(opts);
+};
+
+SoundPlayer.prototype.makeSound = function(opts) {
 	opts.audio = this.af.makeAudio(opts.url);
 	opts.audio.loop = false;
 	opts.audio.load();
-	this.registry[opts.id] = opts;
+	if (typeof opts.volume != 'undefined') {
+		opts.audio.volume = opts.volume;
+	}
+	return opts;
 };
 
 SoundPlayer.prototype.play = function(id) {
@@ -37,11 +45,11 @@ SoundPlayer.prototype.play = function(id) {
 		console.log('sound ' + id + ' not registered');
 		return;
 	}
-	if (this.registry[id].audio.ended) {
+	if (this.registry[id].audio.ended || this.registry[id].audio.currentTime == 0) {
 		this.registry[id].audio.play();
 	} else {
-		var a = this.af.makeAudio(this.registry[id].url);
-		a.play();
+		var entry = this.makeSound(this.registry[id]);
+		entry.audio.play();
 	}
 };
 

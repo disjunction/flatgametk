@@ -11,6 +11,9 @@ var
  * @param Director director
  */
 function Viewport(nodeFactory, director) {
+	this.viewport = null;
+	this.soundPlayer = null;
+	
 	Viewport.superclass.constructor.call(this);
 	
 	this.scale = 1;
@@ -30,6 +33,9 @@ function Viewport(nodeFactory, director) {
 	this.main = this.nf.makeNode(); this.scrolled.addChild(this.main);
 	this.stuff = this.nf.makeNode(); this.scrolled.addChild(this.stuff);
 	this.targets = this.nf.makeNode(); this.scrolled.addChild(this.targets);
+	
+	// where does the camera look at
+	this.point = ccp(0, 0);
 }
 
 Viewport.inherit(Object, {
@@ -37,12 +43,14 @@ Viewport.inherit(Object, {
 		var Animator = require('./Animator');
 		this.animator = new Animator(this.nf, config);
 	},
+
 	addLayersTo: function(layer) {
 		layer.addChild(this.far);
 		layer.addChild(this.scrolled);
 		layer.addChild(this.hud);
 	},
 	moveCameraTo: function(point) {
+		this.point = point;
 		this.scrolled.position = geo.ccpAdd(geo.ccpMult(ccp(-point.x,-point.y), this.scale), this.cameraAnchor);
 	},
 	scaleCameraTo: function(scale, dur) {
@@ -50,6 +58,17 @@ Viewport.inherit(Object, {
 		if (!dur) dur = 0;
 		if (this.animator) {
 			this.animator.scaleTo(this.scrolled, scale, dur);
+		}
+	},
+	
+	/**
+	 * shortcut and wrapper for checking if soundPlayer is set
+	 * if overridden, you can add filtering by location
+	 * @param soundId
+	 */
+	play: function(soundId, location) {
+		if (this.soundPlayer) {
+			this.soundPlayer.play(soundId);
 		}
 	}
 });

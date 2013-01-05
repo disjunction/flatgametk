@@ -58,12 +58,19 @@ ThingBodyBuilder.prototype.makeFixtureDef = function(opts) {
     fixDef.restitution = material.restitution;
     fixDef.density = opts.density? opts.density : this.defaults.density;;
     
-    fixDef.shape = new box2d.b2PolygonShape;
+    if (opts.filter) for (var i in opts.filter) {
+    	fixDef.filter[i] = opts.filter[i];
+    }
+    
     if (opts.box) {
+    	fixDef.shape = new box2d.b2PolygonShape;
 	    fixDef.shape.SetAsBox(opts.box.width / 2, opts.box.height / 2);
     } else if (opts.polygon) {
+    	fixDef.shape = new box2d.b2PolygonShape;
     	var verts = opts.polygon.vertices;
     	fixDef.shape.SetAsArray(verts, verts.length);
+    } else if (opts.radius) {
+    	fixDef.shape = new box2d.b2CircleShape(opts.radius);
     } else {
     	throw new Error('unknown fixture type');
     }
@@ -103,7 +110,6 @@ ThingBodyBuilder.prototype.embody = function(thing) {
 	    throw new Error('no def for thing ' + thing.type);    
 	}
 	if (!def.body) {
-		asdfkaskjdfhkahsd();
 		throw new Error('no def.body for thing ' + thing.type);
 	}
 

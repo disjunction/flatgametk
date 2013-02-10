@@ -13,6 +13,9 @@ var
 function FieldEngine(field) {
 	this.field = field;
 	
+	// use makeWorld to create one
+	this.world = null;
+	
 	// thing corresponding to the player. 
 	// Can be used to detect the relevant area in simulation and skip the rest 
 	this.ego = null;
@@ -112,6 +115,12 @@ FieldEngine.inherit(Idealist, {
 		}
 	},
 	
+	/**
+	 * simple way of creating multiple soimple things of the same type
+	 * the definition contains the type and modifiers (see applyModifiers)
+	 * @param spawnThingDef
+	 * @returns Thing
+	 */
 	spawnThing: function(spawnThingDef) {
 		var def = this.defRepo.get(spawnThingDef.type),
 			thing;

@@ -24,6 +24,25 @@ function Thing(opts) {
 }
 
 Thing.inherit(Object, {
+	/**
+	 * abstract setter supporting event dispatcher (see HudObserver)
+	 * @param propName
+	 * @param newValue
+	 * @return newValue
+	 */
+	setter: function(property, newValue) {
+		var old = this[property];
+				
+		if (old != newValue) {
+			this['_' + property] = newValue;
+			
+			// EventDispatcher
+			if (this.ed) {
+				this.ed.dispatchProperty(this, property, old, newValue);
+			}
+		}
+	},
+	
 	get location() {return this._l;},
 	set location(v) {
 		this._l = v;

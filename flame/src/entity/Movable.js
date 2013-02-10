@@ -6,7 +6,7 @@ var
     ccp    = geo.ccp;
 
 /**
- * helper class - encapsulates generic functionality for moving physical body wrappers
+ * encapsulates generic functionality for moving physical body
  */
 function Movable(opts) {
 	Movable.superclass.constructor.call(this, opts);

@@ -10,11 +10,19 @@ exports.entity.Movable = require('./entity/Movable');
 exports.entity.Field = require('./entity/Field');
 
 exports.viewport = {
+    //Animator is excluded from autoload, because it contains dependencies on cocos2d
 	Viewport: require('./viewport/Viewport'),
 	Interactor: require('./viewport/Interactor'),
 	InteractorState: require('./viewport/InteractorState'),
-	SoundPlayer: require('./viewport/SoundPlayer')
-	// Animator is excluded from autoload, because it contains dependencies on cocos2d
+	SoundPlayer: require('./viewport/SoundPlayer'),
+	hud: {
+		HudObserver: require('./viewport/hud/HudObserver'),
+		EgoHud: require('./viewport/hud/EgoHud'),
+		HudBuilder: require('./viewport/hud/HudBuilder'),
+		elements: {
+			Panel: require('./viewport/hud/elements/Panel'),
+		}
+	}
 };
 
 // mock package... just to reduce unit test boilerplate

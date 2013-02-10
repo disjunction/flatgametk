@@ -1,7 +1,7 @@
 var
 	cocos2d = require('cocos2d'),
 	nodes = cocos2d.nodes,
-    geo    = require('geometry'),
+    geo    = require('pointExtension'),
     ccp    = geo.ccp;
 
 /**
@@ -10,6 +10,7 @@ var
  */
 function NodeFactory(config) {
 	this.config = config;
+	this.nfConfig = this.config.nodeFactory? this.config.nodeFactory : {};
 }
 
 NodeFactory.inherit(Object, {
@@ -49,7 +50,23 @@ NodeFactory.inherit(Object, {
 		return new nodes.TMXTiledMap(opts);
 	},
 	
-	/// PRIVATE PART
+	/**
+	 * opts:
+	 * * string
+	 * * fontName
+	 * * fontSize
+	 * @param opts
+	 */
+	makeLabel: function(opts) {
+		if (!opts.fontName && this.nfConfig.fontName) opts.fontName = this.nfConfig.fontName;
+		if (!opts.fontSize && this.nfConfig.fontSize) opts.fontSize = this.nfConfig.fontSize;
+		
+		var label = new nodes.Label(opts);
+		label.anchorPoint = ccp(0,1);
+		return label;
+	},
+	
+	/// PRIVATE PART ///
 	
 	/**
 	 * applies opts not supported natively in cocos2d contructors

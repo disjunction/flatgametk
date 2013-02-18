@@ -4,10 +4,12 @@ exports.engine.FieldEngine = require('./engine/FieldEngine');
 exports.engine.ThingNodeBuilder = require('./engine/ThingNodeBuilder');
 exports.engine.ThingBodyBuilder = require('./engine/ThingBodyBuilder');
 
-exports.entity = {};
-exports.entity.Thing = require('./entity/Thing');
-exports.entity.Movable = require('./entity/Movable');
-exports.entity.Field = require('./entity/Field');
+exports.entity = {
+	Thing: require('./entity/Thing'),
+	Movable: require('./entity/Movable'),
+	Field: require('./entity/Field'),
+	Stretcher: require('./entity/Stretcher')
+};
 
 exports.viewport = {
     //Animator is excluded from autoload, because it contains dependencies on cocos2d

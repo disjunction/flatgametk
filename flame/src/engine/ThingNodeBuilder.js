@@ -7,7 +7,6 @@ var
     config   = smog.app.config,
     flame    = require('flame'),
     Idealist = smog.util.Idealist,
-    box2d    = require('box2d'),
 	jsein    = require('jsein');
 
 function ThingNodeBuilder(viewport, defRepo) {
@@ -59,12 +58,20 @@ ThingNodeBuilder.prototype.makeNodeByDef = function(nodeDef) {
 		node = this.viewport.nf.makeSprite(nodeDef.opts);
 	}
 
+	if (nodeDef.type == 'label') {
+		node = this.viewport.nf.makeLabel(nodeDef.opts);
+	}
+	
 	if (nodeDef.type == 'animatedSprite') {
 		node = this.viewport.nf.makeAnimatedSprite(nodeDef.opts);
 	}
 	
 	if (!node) throw new Error('unknown node type ' + nodeDef.type);
 	return node;
+};
+
+ThingNodeBuilder.prototype.placeNode = function(node, location) {
+	node.position = geo.ccpMult(location, config.ppm);
 };
 
 ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing) {
@@ -74,7 +81,7 @@ ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing
 	}
 	var node = this.makeNodeByDef(nodeDef);
 
-	node.position = geo.ccpMult(thing.location, config.ppm);
+	this.placeNode(node, thing.location);
 	thing.nodes[nodeName] = node;
 	
 	// layer name in viewport array, needed for future removal, see sestroyNodes()
@@ -100,6 +107,32 @@ ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing
 	return node;
 };
 
+ThingNodeBuilder.prototype.stretchScaleRotate = function(thing, node) {
+	if (!node.initialSize) {
+		// size  has to be clone, otherwise we don't know how to resize each time
+		node.initialSize = jsein.clone(node._boundingBox.size);
+	}
+	var angle = Math.atan2(thing.endLocation.y - thing.startLocation.y, thing.endLocation.x - thing.startLocation.x),
+		distance = geo.ccpDistance(thing.startLocation, thing.endLocation);
+	node.scaleX = distance * config.ppm / node.initialSize.width;
+	node.rotation = geo.radiansToDegrees(-angle);
+};
+
+ThingNodeBuilder.prototype.stretchPlaceNode = function(thing, node) {
+	this.placeNode(node, thing.middleLocation);
+};
+
+ThingNodeBuilder.prototype.stretchUpdateNode = function(thing, node) {
+	thing.location = thing.middleLocation;
+	this.stretchScaleRotate(thing, node);
+};
+
+ThingNodeBuilder.prototype.stretch = function(thing) {
+	for (var key in thing.nodes) {
+		this.stretchUpdateNode(thing, thing.nodes[key]);
+	}
+};
+
 ThingNodeBuilder.prototype.envision = function(thing) {
 	var def = this.defRepo.get(thing.type);
 	if (!def) {
@@ -113,6 +146,9 @@ ThingNodeBuilder.prototype.envision = function(thing) {
 		if (node.removeThing) {
 			thing.removeThing = node.removeThing;
 		}
+	}
+	if (thing.stretch) {
+		this.stretch(thing);
 	}
 };
 

@@ -60,6 +60,7 @@ NodeFactory.inherit(Object, {
 	makeLabel: function(opts) {
 		if (!opts.fontName && this.nfConfig.fontName) opts.fontName = this.nfConfig.fontName;
 		if (!opts.fontSize && this.nfConfig.fontSize) opts.fontSize = this.nfConfig.fontSize;
+		if (!opts.fontColor && this.nfConfig.fontColor) opts.fontColor = this.nfConfig.fontColor;
 		
 		var label = new nodes.Label(opts);
 		label.anchorPoint = ccp(0,1);

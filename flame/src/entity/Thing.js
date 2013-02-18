@@ -28,9 +28,10 @@ Thing.inherit(Object, {
 	 * abstract setter supporting event dispatcher (see HudObserver)
 	 * @param propName
 	 * @param newValue
+	 * @param delay - the smallest period of event dispatching
 	 * @return newValue
 	 */
-	setter: function(property, newValue) {
+	setter: function(property, newValue, delay) {
 		var old = this[property];
 				
 		if (old != newValue) {
@@ -38,9 +39,20 @@ Thing.inherit(Object, {
 			
 			// EventDispatcher
 			if (this.ed) {
-				this.ed.dispatchProperty(this, property, old, newValue);
+				if (delay) {
+					if (this['_' + property + 'Planned']) return newValue;
+					this['_' + property + 'Planned'] = true;
+					setTimeout((function(){
+						this.ed.dispatchProperty(this, property, old, this[property]);
+						this['_' + property + 'Planned'] = false;
+					}).bind(this), delay * 1000);
+				} else {
+					this.ed.dispatchProperty(this, property, old, newValue);
+				}
 			}
 		}
+		
+		return newValue;
 	},
 	
 	get location() {return this._l;},

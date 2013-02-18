@@ -58,7 +58,7 @@ FieldEngine.inherit(Idealist, {
 		this.bodyBuilder.embody(thing);
 	},
 	/**
-	 * it's not to store gravity, use world.GetGravity instead
+	 * gravity is not stored, use world.GetGravity instead
 	 * @param opts
 	 * @returns {box2d.b2World}
 	 */
@@ -220,6 +220,13 @@ FieldEngine.inherit(Idealist, {
 			var thing = this.items[key].thing;
 			thing.location = this.items[key].GetPosition();
 			thing.angle = this.items[key].GetAngle();
+		}
+		
+		// stretch all stretchers :)
+		if (this.groups.stretcher) {
+			for (var key in this.groups.stretcher) {
+				this.nodeBuilder.stretch(this.groups.stretcher[key]);
+			}
 		}
 	},
 	

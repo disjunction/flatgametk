@@ -19,8 +19,8 @@ function Panel(opts) {
 Panel.inherit(Object, {
 	get mySize() {
 		if (this.size) return this.size;
-		if (this.node && this.node.quad) {
-			return this.node.quad.drawRect.size;
+		if (this.node && this.node._boundingBox) {
+			return this.node._boundingBox.size;
 		}
 		return {width:0, height:0};
 	},

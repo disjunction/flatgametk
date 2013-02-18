@@ -97,8 +97,18 @@ ThingBodyBuilder.prototype.makeBodyByDef = function(def) {
     for (var k in def.fixtures)
     	body.CreateFixture(this.makeFixtureDef(def.fixtures[k]));
     
+    // initializing body state by def
+    
     if (def.linearVelocity) {
     	body.SetLinearVelocity(def.linearVelocity);
+    }
+    
+    if (def.angularVelocity) {
+    	body.SetAngularVelocity(jsein.parseFloat(def.angularVelocity));
+    }
+    
+    if (def.angle) {
+    	body.SetAngle(jsein.parseFloat(def.angle));
     }
     
     return body;
@@ -106,9 +116,14 @@ ThingBodyBuilder.prototype.makeBodyByDef = function(def) {
 
 ThingBodyBuilder.prototype.embody = function(thing) {
 	var def = this.defRepo.get(thing.type);
+	
 	if (!def) {
 	    throw new Error('no def for thing ' + thing.type);    
 	}
+	
+	// if thing was defined as nobody, then let's not throw anything
+	if (def.nobody) return null;
+	
 	if (!def.body) {
 		throw new Error('no def.body for thing ' + thing.type);
 	}

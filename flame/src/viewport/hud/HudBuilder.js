@@ -30,6 +30,17 @@ HudBuilder.inherit(Object, {
 		opts.node = node;
 		
 		return new Panel(opts);
+	},
+	
+	getSize: function(element) {
+		if (element.size) return this.size;
+		if (element._boundingBox) {
+			return element._boundingBox.size;
+		}
+		if (element.node && element.node._boundingBox) {
+			return element.node._boundingBox.size;
+		}
+		return {width:0, height:0};
 	}
 });
 

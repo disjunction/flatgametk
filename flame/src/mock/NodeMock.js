@@ -16,6 +16,12 @@ NodeMock.inherit(Object, {
 	},
 	runAction: function(o) {
 		this.actions.push(o);
+	},
+	_boundingBox: {
+		size: {
+			width: 70,
+			height: 40
+		}
 	}
 });
 

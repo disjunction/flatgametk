@@ -22,6 +22,25 @@ Protagonist.prototype.location2position = function(location) {
 
 Protagonist.prototype.setFieldEngine = function(fe) {
 	this.fe = fe;
+	fe.config = this.config;
+
+	if (fe.isVisual) {
+		fe.injectViewport(this.viewport);
+	}
+	
+	if (this.ego) {
+		this.fe.setEgo(this.ego);
+	}
+};
+
+Protagonist.prototype.setEgo = function(ego) {
+	this.ego = ego;
+	
+	// the following duplicates functionality in setFieldEngine, 
+	// but it's fine since there is no preferred order between ego and fe
+	if (this.fe) {
+		this.fe.setEgo(this.ego);
+	}
 };
 
 Protagonist.prototype.syncCamera = function() {
@@ -46,16 +65,31 @@ Protagonist.prototype.syncCamera = function() {
 Protagonist.make = function(opts) {
 	if (!opts) opts = {};
 	
+	var config = opts.config;
+	if (!config) {
+		config = opts.fieldEngine? opts.fieldEngine.config : smog.app.config;
+	}
+	
 	var
 		nfClass = opts['NodeFactoryClass']? opts['NodeFactoryClass'] : require(flame.srcPath + '/NodeFactory'),
-	    config = opts['config']? opts['config'] : smog.app.config,
 	    nf = new nfClass(config),
 	    director = opts['director']? opts['director'] : require('cocos2d').Director.sharedDirector,
 	    viewportClass = opts['ViewportClass']? opts['ViewportClass'] : flame.viewport.Viewport,
 	    viewport = new viewportClass(nf, director),
-	    protagonistClass = opts['ProtagonistClass']? opts['ProtagonistClass'] : flame.engine.Protagonist;
+	    protagonistClass = opts['ProtagonistClass']? opts['ProtagonistClass'] : flame.engine.Protagonist,
+	    p = new protagonistClass(viewport);
+	    
+	p.config = config;
+	    
+	if (opts.fieldEngine) {
+		p.setFieldEngine(opts.fieldEngine);
+	}
 	
-	return new protagonistClass(viewport);
+	if (opts.ego) {
+		p.setEgo(opts.ego);
+	}
+	
+	return p;
 };
 
 

@@ -11,6 +11,10 @@ var
     box2d    = require('box2d');
 
 function FieldEngine(field) {
+	// this separates all engines into 2 distinc categories,
+	// preventing the field to be only half-visual
+	this.isVisual = true;
+	
 	this.field = field;
 	
 	// use makeWorld to create one
@@ -33,9 +37,34 @@ function FieldEngine(field) {
     // unlike items, groups contain things instead of bodies, i.e. nobody things can be found here
     // structure: {'groupName': {'thing.ii1': {Thing1}, 'thing.ii2': {Thing2} ... }, ...}
     this.groups = {};
+    
+    // opts as they came to factory
+    // this is needed for delayed or additional initializing
+    // @see injectViewport
+    this.opts = {};
 }
 
 FieldEngine.inherit(Idealist, {
+	// it's not recommended to do anything other than initilize node builder
+	injectViewport: function(viewport) {
+		if (!this.isVisual) {
+			throw new Error('calling injectViewport() on non-visual engine')
+		}
+		var nodeBuilderClass = this.opts.NodeBuilderClass? this.opts.NodeBuilderClass : require('./ThingNodeBuilder');
+		this.nodeBuilder = new nodeBuilderClass(viewport, this.defRepo);
+	},
+	
+	setEgo: function(ego) {
+		this.ego = ego;
+	},
+	
+	setNodeBuilder: function(nodeBuilder) {
+		if (!this.isVisual) {
+			throw new Error('calling setNodeBuilder() on non-visual engine')
+		}
+		this.nodeBuilder = nodeBuilder;
+	},
+	
 	addThingToGroup: function(thing, group) {
 		if (!this.groups[group]) {
 			this.groups[group] = {};
@@ -45,6 +74,10 @@ FieldEngine.inherit(Idealist, {
 	
 	// adds support of thing auto-removal
 	envision: function(thing) {
+		if (!this.isVisual) {
+			throw new Error('calling envision() on non-visual engine')
+		}
+		
 		this.nodeBuilder.envision(thing);
 		if (thing.removeThing) {
 			setTimeout(function(){
@@ -136,7 +169,7 @@ FieldEngine.inherit(Idealist, {
 		this.addThing(thing);
 		this.applyModifiers(thing, spawnThingDef); // set location and stuff
 		
-		if (def.nodes) {
+		if (def.nodes && this.isVisual) {
 			this.envision(thing);
 		}
 		return thing;
@@ -317,16 +350,16 @@ FieldEngine.inherit(Idealist, {
 
 /**
  * Fat factory method, doing needed ctor injections,
- * so that bootstrap for the app or unittest is done using "one" line
+ * so that bootstrap for the app or unittest is done using "one line"
  * 
  * @param opts 
  * 
- * * config: object (only if protagonist is not set)
+ * * config: object
  * * field: Field,
  * * FieldEngineClass: ctor,
  * * worldOpts: object (options for makeWorld)
  * * BodyBuilderClass: ctor,
- * * NodeBuilderClass: ctor
+ * * NodeBuilderClass: ctor, (this will be initialized only in injectViewport later)
  * * defRepo: JsonRepo
  * 
  * @returns FieldEngine
@@ -340,26 +373,15 @@ FieldEngine.make = function(opts) {
 	    fe = new feClass(field),
 	    worldOpts = opts['worldOpts']? opts['worldOpts'] : {},
 	    world = fe.makeWorld(worldOpts),
-	    
 	    defRepo = opts['defRepo']? opts['defRepo'] : new jsein.JsonRepo(),
-	    
 	    bodyBuilderClass = opts['BodyBuilderClass']? opts['BodyBuilderClass'] : require('./ThingBodyBuilder'),
 	    bodyBuilder = new bodyBuilderClass(world, defRepo);
 	    
-    if (opts['protagonist']) {
-    	var p = opts['protagonist'];
-    	fe.config = p.config;
-    	var nodeBuilderClass = opts['NodeBuilderClass']? opts['NodeBuilderClass'] : require('./ThingNodeBuilder');
-    	fe.nodeBuilder = new nodeBuilderClass(p.viewport, defRepo);
-    	
-    	p.setFieldEngine(fe);
-    	if (p.ego) this.ego = p.ego;
-    } else {
-    	this.config = opts['config']? opts['config'] : smog.app.config;
-    }
-	    
+    fe.config = opts['config']? opts['config'] : smog.app.config;
 	fe.bodyBuilder = bodyBuilder;
 	fe.defRepo = defRepo;
+	
+	fe.opts = opts;
 	
 	return fe;
 };

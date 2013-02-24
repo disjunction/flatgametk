@@ -16,7 +16,7 @@ SoundPlayer.inherit(jsaaa.SoundPlayer, {
 		SoundPlayer.superclass.createSound.call(this, opts);
 	},
 	
-	loadDefRepo: function(repo) {
+	loadSoundRepo: function(repo) {
 		for (var k in repo.defs) {
 			repo.defs[k].id = k;
 			this.createSound(repo.defs[k]);
@@ -31,8 +31,8 @@ SoundPlayer.make = function(opts) {
 		af = opts['audioFactory']? opts['audioFactory'] : new afClass(),
 		config = opts['config']? opts['config'] : smog.app.config,
 		sp = new spClass(af, config);
-	if (opts['defRepo']) {
-		sp.loadDefRepo(opts['defRepo']);
+	if (opts['soundRepo']) {
+		sp.loadSoundRepo(opts['soundRepo']);
 	}
 	return sp;
 };

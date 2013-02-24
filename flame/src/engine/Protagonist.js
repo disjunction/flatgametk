@@ -47,6 +47,15 @@ Protagonist.prototype.setEgo = function(ego) {
 	}
 };
 
+/**
+ * normally you just need to provide soundRepo,
+ * protagonist will create and set up sound player for you
+ * @param jsein.JsonRepo soundRepo
+ */
+Protagonist.prototype.setSoundRepo = function(soundRepo) {
+	this.viewport.soundPlayer = flame.viewport.SoundPlayer.make({soundRepo: soundRepo, config: this.config});
+};
+
 Protagonist.prototype.syncCamera = function() {
 	var body = this.fe.get(this.ego.bodyId);
 	if (body) {
@@ -84,7 +93,7 @@ Protagonist.make = function(opts) {
 	    p = new protagonistClass(viewport);
 	    
 	p.config = config;
-	    
+
 	if (opts.fieldEngine) {
 		p.setFieldEngine(opts.fieldEngine);
 	}

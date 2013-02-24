@@ -56,6 +56,8 @@ Interactor.inherit(Object, {
 		}
 	},
 	processKey: function(evt, type, on, key) {
+		if (!this.state.enabled) return;
+		
 		switch (key.type) {
 		case 'state':
 			var stateCode = key.state;

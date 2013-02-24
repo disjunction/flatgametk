@@ -45,6 +45,7 @@ SoundPlayer.prototype.play = function(id) {
 		console.log('sound ' + id + ' not registered');
 		return;
 	}
+	
 	if (this.registry[id].audio.ended || this.registry[id].audio.currentTime == 0) {
 		this.registry[id].audio.play();
 	} else {

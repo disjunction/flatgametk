@@ -33,6 +33,10 @@ Protagonist.prototype.setFieldEngine = function(fe) {
 	}
 };
 
+Protagonist.prototype.setLayer = function(layer) {
+	this.viewport.addLayersTo(layer);
+};
+
 Protagonist.prototype.setEgo = function(ego) {
 	this.ego = ego;
 	
@@ -83,6 +87,10 @@ Protagonist.make = function(opts) {
 	    
 	if (opts.fieldEngine) {
 		p.setFieldEngine(opts.fieldEngine);
+	}
+	
+	if (opts.layer) {
+		p.setLayer(opts.layer);
 	}
 	
 	if (opts.ego) {

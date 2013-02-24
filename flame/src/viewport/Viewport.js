@@ -36,6 +36,9 @@ function Viewport(nodeFactory, director) {
 	
 	// where does the camera look at
 	this.point = ccp(0, 0);
+	
+	// main cocos2d layer, see addLayersTo()
+	this.layer = null;
 }
 
 Viewport.inherit(Object, {
@@ -48,6 +51,8 @@ Viewport.inherit(Object, {
 		layer.addChild(this.far);
 		layer.addChild(this.scrolled);
 		layer.addChild(this.hud);
+		
+		this.layer = layer;
 	},
 	
 	moveCameraTo: function(point, duration) {

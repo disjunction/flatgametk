@@ -149,11 +149,14 @@ FieldEngine.inherit(Idealist, {
 		
 		if (!thing.nobody) {
 			var body = this.bodyBuilder.embody(thing);
-			body.thing = thing;
-			this.add(body);
-			
-			// backlink through id to avoid recursive references
-			thing.bodyId = body.ii;
+			// body can be null, if the definition contains nobody flag
+			if (body) {
+				body.thing = thing;
+				this.add(body);
+				
+				// backlink through id to avoid recursive references
+				thing.bodyId = body.ii;
+			}
 		}
 		
 		if (thing.group) {

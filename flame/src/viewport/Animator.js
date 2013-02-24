@@ -85,6 +85,9 @@ Animator.prototype.scaleBy = function(node, scale, dur) {
 Animator.prototype.scaleTo = function(node, scale, dur) {
 	node.runAction(new actions.ScaleTo({duration: dur, scale: scale}));
 };
+Animator.prototype.moveTo = function(node, position, dur) {
+	node.runAction(new actions.MoveTo({duration: dur, position: position}));
+};
 
 Animator.prototype.remove = function(node, delay, layer) {
 	setTimeout(function() {

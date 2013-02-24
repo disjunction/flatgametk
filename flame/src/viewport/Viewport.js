@@ -49,15 +49,28 @@ Viewport.inherit(Object, {
 		layer.addChild(this.scrolled);
 		layer.addChild(this.hud);
 	},
-	moveCameraTo: function(point) {
+	
+	moveCameraTo: function(point, duration) {
+		if (!duration) duration = 0;
 		this.point = point;
-		this.scrolled.position = geo.ccpAdd(geo.ccpMult(ccp(-point.x,-point.y), this.scale), this.cameraAnchor);
+		var position = geo.ccpAdd(geo.ccpMult(ccp(-point.x,-point.y), this.scale), this.cameraAnchor);
+		if (!duration || !this.animator) {
+			this.scrolled.position = position;
+		} else {
+			this.animator.moveTo(this.scrolled, position, duration);
+		}
 	},
-	scaleCameraTo: function(scale, dur) {
+	
+	/**
+	 * creates zoom camera effect
+	 * @param scale
+	 * @param duration in seconds
+	 */
+	scaleCameraTo: function(scale, duration) {
 		this.scale = scale;
-		if (!dur) dur = 0;
+		if (!duration) duration = 0;
 		if (this.animator) {
-			this.animator.scaleTo(this.scrolled, scale, dur);
+			this.animator.scaleTo(this.scrolled, scale, duration);
 		}
 	},
 	

@@ -64,7 +64,7 @@ NodeFactory.inherit(Object, {
 		
 		var label = new nodes.Label(opts);
 		label.anchorPoint = ccp(0,1);
-		return label;
+		return this.applyOpts(label, opts);
 	},
 	
 	/// PRIVATE PART ///
@@ -76,10 +76,11 @@ NodeFactory.inherit(Object, {
 	 * @return Node
 	 */
 	applyOpts: function(node, opts) {
-		
+		/*
 		if (opts.anchorPoint) {
 			node.anchorPoint = opts.anchorPoint;
 		}
+		*/
 		
 		for (var i in opts) {
 			switch (i) {

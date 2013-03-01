@@ -5,5 +5,4 @@ exports.entity = {};
 exports.entity.Credential = require('./entity/Credential');
 exports.entity.Player = require('./entity/Player');
 
-exports.app = {};
-exports.app.config = {};
+exports.app = new (require('./app/App'));

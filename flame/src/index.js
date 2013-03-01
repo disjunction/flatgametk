@@ -17,6 +17,7 @@ exports.viewport = {
 	Interactor: require('./viewport/Interactor'),
 	InteractorState: require('./viewport/InteractorState'),
 	SoundPlayer: require('./viewport/SoundPlayer'),
+	Webpage: require('./viewport/Webpage'),
 	hud: {
 		HudObserver: require('./viewport/hud/HudObserver'),
 		EgoHud: require('./viewport/hud/EgoHud'),

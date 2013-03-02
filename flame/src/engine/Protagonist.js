@@ -106,6 +106,12 @@ Protagonist.make = function(opts) {
 		p.setEgo(opts.ego);
 	}
 	
+	if (opts.webpage) {
+		p.viewport.webpage = opts.webpage;
+	} else if (opts.window) {
+		p.viewport.webpage = new flame.viewport.Webpage({window: window});
+	} 
+	
 	return p;
 };
 

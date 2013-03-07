@@ -33,7 +33,7 @@ Stretcher.inherit(Thing, {
 	},
 	
 	_getAnchorLocation: function(thing, anchor) {
-		return geo.ccpAdd(thing.location, anchor.point);
+		return anchor? geo.ccpAdd(thing.location, anchor.point) : thing.location;
 	},
 	
 	get startLocation() {

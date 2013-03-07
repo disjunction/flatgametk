@@ -214,7 +214,7 @@ FieldEngine.inherit(Idealist, {
 			this.remove(thing.bodyId);
 		}
 		
-		if (thing.group) {
+		if (thing.group && this.groups[thing.group]) {
 			delete this.groups[thing.group][thing.ii];
 		}
 		

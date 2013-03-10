@@ -84,10 +84,10 @@ Protagonist.make = function(opts) {
 	}
 	
 	var
-		nfClass = opts['NodeFactoryClass']? opts['NodeFactoryClass'] : require(flame.srcPath + '/NodeFactory'),
+		nfClass = opts['NodeFactoryClass']? opts['NodeFactoryClass'] : require('../NodeFactory'),
 	    nf = new nfClass(config),
 	    director = opts['director']? opts['director'] : require('cocos2d').Director.sharedDirector,
-	    viewportClass = opts['ViewportClass']? opts['ViewportClass'] : flame.viewport.Viewport,
+	    viewportClass = opts['ViewportClass']? opts['ViewportClass'] : require('../viewport/Viewport'),
 	    viewport = new viewportClass(nf, director),
 	    protagonistClass = opts['ProtagonistClass']? opts['ProtagonistClass'] : flame.engine.Protagonist,
 	    p = new protagonistClass(viewport);

@@ -1,0 +1,27 @@
+{
+	"ZepSelf": {
+		"nodes": {
+			"main": {
+				"type": "sprite",
+				"opts": {
+					"file": "/resources/sprites/flyers/zep1.png",
+					"scale": 0.3
+				}
+			}
+		},
+		"body": {
+			"type":  "dynamic",
+			"fixtures": {
+				"main": {
+					"material": "iron",
+					"shape": "PolygonShape",
+					"box": {
+						"width": 2,
+						"height": 1.5
+					},
+					"restitution": 0.5
+				}
+			}
+		}
+	}
+}

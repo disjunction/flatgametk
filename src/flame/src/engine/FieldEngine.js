@@ -5,7 +5,8 @@ var
     ccp      = geo.ccp,
     smog     = require('smog'),
     config   = smog.app.config,
-    flame    = require('flame'),
+    Field    = require('../entity/Field'),
+    Thing    = require('../entity/Thing'),
     Idealist = smog.util.Idealist,
     jsein    = require('jsein'),
     box2d    = require('box2d');
@@ -161,7 +162,7 @@ FieldEngine.inherit(Idealist, {
 		if (def.className) {
 			thing = jsein.create(def.className, spawnThingDef.type);
 		} else {
-			thing = new flame.entity.Thing(spawnThingDef.type);
+			thing = new Thing(spawnThingDef.type);
 		}
 		
 		if (def.nobody) thing.nobody = true;
@@ -368,7 +369,7 @@ FieldEngine.make = function(opts) {
 	if (!opts) opts = {};
 	
 	var
-		field = opts['field']? opts['field'] : new flame.entity.Field(),
+		field = opts['field']? opts['field'] : new Field(),
 	    feClass = opts['FieldEngineClass']? opts['FieldEngineClass'] : FieldEngine,
 	    fe = new feClass(field),
 	    worldOpts = opts['worldOpts']? opts['worldOpts'] : {},

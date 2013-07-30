@@ -9,6 +9,13 @@ var
     Idealist = smog.util.Idealist,
 	jsein    = require('jsein');
 
+/**
+ * builds visual nodes according to visualization definitions (defRepo),
+ * encapsulates viewport so that game models don't have this dependency (except for Protagonist)
+ * 
+ * @param viewport
+ * @param defRepo
+ */
 function ThingNodeBuilder(viewport, defRepo) {
 	this.viewport = viewport;
 	this.defRepo = defRepo;
@@ -32,6 +39,12 @@ ThingNodeBuilder.prototype.animateNode = function(node, animateDef, layer) {
 	}
 };
 
+/**
+ * animates given node according to animateDef
+ * @param node
+ * @param animateDef
+ * @param Node|Layer layer - optional, needed only if node.layer is empty
+ */
 ThingNodeBuilder.prototype.animateNodeAttomic = function(node, animateDef, layer) {
 	if (!layer && node.layer) {
 		layer = this.viewport[node.layer];
@@ -52,6 +65,10 @@ ThingNodeBuilder.prototype.animateNodeAttomic = function(node, animateDef, layer
 	this.viewport.animator.animateNode(node, animateDef);
 };
 
+/**
+ * @param nodeDef
+ * @returns Node|false
+ */
 ThingNodeBuilder.prototype.makeNodeByDef = function(nodeDef) {
 	var node = false;
 	if (!nodeDef.type  || nodeDef.type == 'sprite') {
@@ -74,17 +91,30 @@ ThingNodeBuilder.prototype.placeNode = function(node, location) {
 	node.position = geo.ccpMult(location, config.ppm);
 };
 
+/**
+ * common case for simple single-node objects - create and envision node for given thing
+ * 
+ * this is handy for creating particles, such as snow, explosions etc.
+ * 
+ * @param nodeDef
+ * @param nodeName
+ * @param thing
+ * @returns Node
+ */
 ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing) {
 	if (thing.scale) {
 		nodeDef = jsein.clone(nodeDef);
 		nodeDef.opts.scale = thing.scale;
 	}
 	var node = this.makeNodeByDef(nodeDef);
-
+	if (!node) {
+	    throw new Error('cant envison non-creatable node');
+	}
+	
 	this.placeNode(node, thing.location);
 	thing.nodes[nodeName] = node;
 	
-	// layer name in viewport array, needed for future removal, see sestroyNodes()
+	// layer name in viewport array, needed for future removal, see destroyNodes()
 	var viewportLayer;
 	
 	if (nodeDef.layer) {
@@ -107,6 +137,11 @@ ThingNodeBuilder.prototype.envisionNodeByDef = function(nodeDef, nodeName, thing
 	return node;
 };
 
+/**
+ * special initialization for Stretcher things (ropes, lasers)
+ * @param Sretcher thing
+ * @param node
+ */
 ThingNodeBuilder.prototype.stretchScaleRotate = function(thing, node) {
 	if (!node.initialSize) {
 		// size  has to be clone, otherwise we don't know how to resize each time
@@ -118,21 +153,39 @@ ThingNodeBuilder.prototype.stretchScaleRotate = function(thing, node) {
 	node.rotation = geo.radiansToDegrees(-angle);
 };
 
+/**
+ * helper method for stretcher movement
+ * @param Stretcher thing
+ * @param node
+ */
 ThingNodeBuilder.prototype.stretchPlaceNode = function(thing, node) {
 	this.placeNode(node, thing.middleLocation);
 };
 
+/**
+ * commonly used wrapper around ::stretchScaleRotate()
+ * @param Stretcher thing
+ * @param node
+ */
 ThingNodeBuilder.prototype.stretchUpdateNode = function(thing, node) {
 	thing.location = thing.middleLocation;
 	this.stretchScaleRotate(thing, node);
 };
 
+/**
+ * initialization for composite stretchers
+ * @param thing
+ */
 ThingNodeBuilder.prototype.stretch = function(thing) {
 	for (var key in thing.nodes) {
 		this.stretchUpdateNode(thing, thing.nodes[key]);
 	}
 };
 
+/**
+ * common wrapper for ::envisionNodeByDef() with implicit definition resolve
+ * @param thing
+ */
 ThingNodeBuilder.prototype.envision = function(thing) {
 	var def = this.defRepo.get(thing.type);
 	if (!def) {
@@ -152,6 +205,12 @@ ThingNodeBuilder.prototype.envision = function(thing) {
 	}
 };
 
+/**
+ * destroys all nodes for given thing
+ * 
+ * placed here as it has a strong logical connection to node creation
+ * @param thing
+ */
 ThingNodeBuilder.prototype.destroyNodes = function(thing) {
 	for (var k in thing.nodes) {	
 		var viewportLayer;

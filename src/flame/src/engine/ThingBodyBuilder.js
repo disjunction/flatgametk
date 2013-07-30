@@ -6,11 +6,9 @@ var
     jsein    = require('jsein'),
     box2d    = require('box2d');
 
-
-
 function ThingBodyBuilder(world, defRepo, materialRepo) {
 	if (!materialRepo) {
-		materialRepo = new jsein.JsonRepo(this.getMaterials()); 
+		materialRepo = new jsein.JsonRepo(this.getDefaultMaterials()); 
 	}
 	this.materialRepo = materialRepo;
 	this.defRepo = defRepo;
@@ -18,7 +16,7 @@ function ThingBodyBuilder(world, defRepo, materialRepo) {
 	this.defaults = this.getDefaults();
 }
 
-ThingBodyBuilder.prototype.getMaterials = function() {
+ThingBodyBuilder.prototype.getDefaultMaterials = function() {
 	return {
 		iron: {
 			friction: 0.70,
@@ -114,11 +112,16 @@ ThingBodyBuilder.prototype.makeBodyByDef = function(def) {
     return body;
 };
 
+/**
+ * handy function - creates body for conrete thing wrapped with validation
+ * @param Thing thing
+ * @returns box2d.b2Body
+ */
 ThingBodyBuilder.prototype.embody = function(thing) {
 	var def = this.defRepo.get(thing.type);
 	
 	if (!def) {
-	    throw new Error('no def for thing ' + thing.type);    
+	    throw new Error('no def for thing ' + thing.type);
 	}
 	
 	// if thing was defined as nobody, then let's not throw anything

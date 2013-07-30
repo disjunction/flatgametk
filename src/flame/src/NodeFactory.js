@@ -5,8 +5,8 @@ var
     ccp    = geo.ccp;
 
 /**
- * The goal of this factory is to make it mockable,
- * so that full with the nodes and scenes can be tested in console
+ * The main goal of this factory is to make it mockable,
+ * so that full application with the nodes and scenes can be tested in console
  */
 function NodeFactory(config) {
 	this.config = config;
@@ -14,22 +14,25 @@ function NodeFactory(config) {
 }
 
 NodeFactory.inherit(Object, {
-	makeNode: function(opts) {
+	
+    makeNode: function(opts) {
 		if (null == opts) {
 			opts = {};
 		}
 		return this.applyOpts(new nodes.Node(opts), opts);
 	},
+	
 	makeSprite: function(opts) {
 		return this.applyOpts(new nodes.Sprite(opts), opts);
 	},
+	
 	makeAnimatedSprite: function(opts) {
 		if (!opts.file || !opts.frames || !opts.delay) {
 			throw new Error('animatedFrame requires file, frames and delay options');
 		}
-		//console.log(opts.file );
+		
 		var texture = new cocos2d.Texture2D({ file: opts.file });
-		//return this.makeSprite(opts);
+		
 		var frames = [];
 		for (var i in opts.frames) {
 			var rect = opts.frames[i];
@@ -52,10 +55,12 @@ NodeFactory.inherit(Object, {
 	
 	/**
 	 * opts:
-	 * * string
 	 * * fontName
 	 * * fontSize
+     * * fontColor
+     * * ... all other label opts
 	 * @param opts
+	 * @return cocos2d.nodes.Label
 	 */
 	makeLabel: function(opts) {
 		if (!opts.fontName && this.nfConfig.fontName) opts.fontName = this.nfConfig.fontName;
@@ -67,21 +72,13 @@ NodeFactory.inherit(Object, {
 		return this.applyOpts(label, opts);
 	},
 	
-	/// PRIVATE PART ///
-	
 	/**
-	 * applies opts not supported natively in cocos2d contructors
+	 * applies opts - not supported natively in cocos2d contructors
 	 * @param Node node
 	 * @param assoc opts
 	 * @return Node
 	 */
 	applyOpts: function(node, opts) {
-		/*
-		if (opts.anchorPoint) {
-			node.anchorPoint = opts.anchorPoint;
-		}
-		*/
-		
 		for (var i in opts) {
 			switch (i) {
 			case 'rotation':
